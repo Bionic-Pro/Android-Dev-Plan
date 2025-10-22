@@ -1,0 +1,65 @@
+How to Ask Gemini Agent to Use Git and GitHub Integration
+Prompt example:
+
+"Initialize Git version control in this Android Studio project. Create an initial commit with the current project state. Connect the local repository to the GitHub remote repository at [your_repo_url]. Push all commits to the main branch. Configure Git to sync automatically on saves and provide status updates on code changes."
+
+How to Manually Use Git and GitHub Integration in Android Studio
+Initialize Git Repository
+
+Open your project in Android Studio.
+
+Go to VCS menu → Enable Version Control Integration...
+
+Select Git and click OK.
+
+This creates a local Git repo.
+
+Create Initial Commit
+
+Go to VCS → Commit...
+
+Review files, write a commit message like "Initial commit," and commit.
+
+Add Remote GitHub Repository
+
+In Android Studio, go to Git → Manage Remotes...
+
+Click + to add a new remote.
+
+Enter your GitHub repository URL.
+
+Push to GitHub
+
+Go to Git → Push...
+
+Select the local branch (e.g., main or master) and push to the remote.
+
+Pull and Sync
+
+On a different PC, clone the GitHub repo using Android Studio's Get from Version Control on the welcome screen or File → New → Project from Version Control.
+
+Android Studio will open the project with full Git integration.
+
+Use Git → Pull... to sync changes and Push... for your commits.
+
+To enable smooth continuation of work across machines with Android Studio and Gemini agent, you should provide the Gemini agent with precise prompts for each task, such as:
+
+"Set up Ktlint and Detekt in Gradle Kotlin DSL build scripts for consistent Kotlin code style and static analysis; integrate into CI pipeline."
+
+"Configure JUnit 5 and Mockito in Gradle for unit testing ViewModels and data repositories; provide instructions to run and automate tests locally and in CI."
+
+"Create a GitHub Actions workflow that runs on every push/PR, performing linting, builds, tests, and caching for Gradle dependencies."
+
+"Integrate Firebase Crashlytics SDK, configure Gradle plugins, enable crash reporting, and verify app startup initialization."
+
+"Implement a dark-themed Material 3 design system using Jetpack Compose with customized colors, typography, shapes, and responsive layouts."
+
+"Create ViewModels with StateFlow for reactive UI state management; use Room database for quiz progress persistence; implement repository pattern."
+
+"Set up Jetpack Navigation Component with Compose; define navigation graphs, deep linking, and smooth animations for screen transitions."
+
+"Configure Retrofit and OkHttp clients with interceptors for authentication, logging, retries; establish timeout policies and API interfaces."
+
+"Develop a recommendation result screen with Compose featuring an image carousel, feature lists, native Android sharing, and bookmarks."
+
+"Configure ProGuard/R8 for code shrinking and obfuscation; enable resource shrinking and bundle splits; optimize APK size for release."
