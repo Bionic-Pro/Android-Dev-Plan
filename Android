@@ -1,0 +1,514 @@
+import React from 'react';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+  Dimensions,
+  PanResponder,
+  TextInput,
+} from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import * as Animatable from 'react-native-animatable';
+import { useQuiz, QuizAnswers } from '../utils/QuizContext';
+import { languageConfigs } from '../constants/languages';
+import BudgetSlider from '../components/BudgetSlider';
+
+const { width } = Dimensions.get('window');
+
+interface QuizScreenProps {
+  navigation: any;
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  scrollContainer: {
+    flex: 1,
+  },
+  content: {
+    padding: 20,
+    paddingTop: 60,
+  },
+  progressContainer: {
+    marginBottom: 30,
+  },
+  progressBar: {
+    height: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 5,
+    overflow: 'hidden',
+    marginBottom: 10,
+  },
+  progressFill: {
+    height: '100%',
+    borderRadius: 5,
+  },
+  progressText: {
+    color: '#ffd700',
+    fontSize: 16,
+    textAlign: 'center',
+    fontFamily: 'Impact',
+  },
+  stageCard: {
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    borderRadius: 15,
+    padding: 20,
+    borderWidth: 2,
+    borderColor: '#ff4500',
+  },
+  stageTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#ffd700',
+    textAlign: 'center',
+    marginBottom: 10,
+    fontFamily: 'Impact',
+  },
+  stageSubtitle: {
+    fontSize: 16,
+    color: '#fff',
+    textAlign: 'center',
+    marginBottom: 20,
+    opacity: 0.9,
+  },
+  stageContent: {
+    marginBottom: 30,
+  },
+  stageContentText: {
+    color: '#fff',
+    fontSize: 18,
+    textAlign: 'center',
+    fontFamily: 'Impact',
+  },
+  optionsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+  },
+  optionButton: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 10,
+    padding: 12,
+    margin: 5,
+    minWidth: width * 0.4,
+    alignItems: 'center',
+  },
+  selectedOption: {
+    backgroundColor: '#ff4500',
+    borderWidth: 2,
+    borderColor: '#ffd700',
+  },
+  checkboxButton: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 10,
+    padding: 12,
+    margin: 5,
+    minWidth: width * 0.4,
+    alignItems: 'center',
+  },
+  selectedCheckbox: {
+    backgroundColor: '#ff4500',
+    borderWidth: 2,
+    borderColor: '#ffd700',
+  },
+  checkboxText: {
+    color: '#fff',
+    fontSize: 14,
+    textAlign: 'center',
+    fontFamily: 'Impact',
+  },
+  optionText: {
+    color: '#fff',
+    fontSize: 14,
+    textAlign: 'center',
+    fontFamily: 'Impact',
+  },
+  navigationContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 20,
+  },
+  backButton: {
+    flex: 1,
+    marginRight: 10,
+    borderRadius: 25,
+    overflow: 'hidden',
+  },
+  backButtonGradient: {
+    paddingVertical: 15,
+    alignItems: 'center',
+  },
+  backButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+    fontFamily: 'Impact',
+  },
+  nextButton: {
+    flex: 1,
+    marginLeft: 10,
+    borderRadius: 25,
+    overflow: 'hidden',
+  },
+  nextButtonGradient: {
+    paddingVertical: 15,
+    alignItems: 'center',
+  },
+  nextButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+    fontFamily: 'Impact',
+  },
+  questionContainer: {
+    marginBottom: 20,
+  },
+  questionText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#ffd700',
+    textAlign: 'center',
+    fontFamily: 'Impact',
+  },
+  optionsContainer: {
+    marginBottom: 20,
+  },
+  errorText: {
+    color: '#ff4500',
+    fontSize: 18,
+    textAlign: 'center',
+    fontFamily: 'Impact',
+  },
+  textInput: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 10,
+    padding: 15,
+    marginBottom: 15,
+    color: '#fff',
+    fontSize: 16,
+    fontFamily: 'Impact',
+    textAlignVertical: 'top',
+  },
+});
+
+const QuizScreen: React.FC<QuizScreenProps> = ({ navigation }) => {
+  console.log('🚀 QuizScreen: Component initializing');
+  const { state, setAnswer, setCurrentStage } = useQuiz();
+  console.log('📊 QuizScreen: Current state:', state);
+
+  const currentStageData = languageConfigs[state.language]?.stages[state.currentStage] || languageConfigs.en?.stages[state.currentStage];
+  console.log('📋 QuizScreen: Current stage data for stage', state.currentStage, ':', currentStageData);
+
+  if (!currentStageData) {
+    console.error('❌ QuizScreen: No stage data found for stage', state.currentStage, 'in language', state.language);
+    // Fallback to English stage 1 if data is missing
+    return (
+      <LinearGradient colors={['#000', '#1a0000', '#330000']} style={styles.container}>
+        <View style={styles.content}>
+          <Text style={styles.errorText}>Error loading quiz stage. Please restart the app.</Text>
+        </View>
+      </LinearGradient>
+    );
+  }
+
+  const isOptionSelected = (key: keyof QuizAnswers, value: string) => {
+    const answer = state.answers[key];
+    if (Array.isArray(answer)) {
+      return answer.includes(value);
+    }
+    return answer === value;
+  };
+
+  const nextStage = () => {
+    setCurrentStage(state.currentStage + 1);
+  };
+
+  const previousStage = () => {
+    setCurrentStage(state.currentStage - 1);
+  };
+
+  const handleNext = () => {
+    if (state.currentStage < 8) {
+      nextStage();
+    } else {
+      // Handle quiz completion
+      navigation.navigate('Results');
+    }
+  };
+
+  const handleBack = () => {
+    if (state.currentStage > 1) {
+      previousStage();
+    } else {
+      navigation.goBack();
+    }
+  };
+
+  const renderProgress = () => (
+    <View style={styles.progressContainer}>
+      <Text style={styles.progressText}>
+        {state.currentStage}/8
+      </Text>
+      <View style={styles.progressBar}>
+        <View style={[styles.progressFill, { width: `${(state.currentStage / 8) * 100}%` }]} />
+      </View>
+    </View>
+  );
+
+  const renderQuestion = () => (
+    <Text style={styles.stageContentText}>
+      {currentStageData.title}
+      {currentStageData.subtitle && `\n${currentStageData.subtitle}`}
+    </Text>
+  );
+
+  const renderStageContent = () => {
+    switch (state.currentStage) {
+      case 1:
+        return (
+          <BudgetSlider
+            value={state.answers.budget || 10000}
+            onValueChange={(value) => setAnswer('budget', value)}
+            min={10000}
+            max={200000}
+            step={5000}
+          />
+        );
+      case 2:
+        return (
+          <View style={styles.optionsGrid}>
+            {currentStageData?.options && Object.entries(currentStageData.options).map(([key, option]) => (
+              <TouchableOpacity
+                key={key}
+                style={[
+                  styles.checkboxButton,
+                  isOptionSelected('lifestyle', key) && styles.selectedCheckbox,
+                ]}
+                onPress={() => {
+                  const currentLifestyle = state.answers.lifestyle || [];
+                  const newLifestyle = currentLifestyle.includes(key)
+                    ? currentLifestyle.filter(l => l !== key)
+                    : [...currentLifestyle, key];
+                  setAnswer('lifestyle', newLifestyle);
+                }}
+              >
+                <Text style={styles.checkboxText}>{option}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        );
+      case 3:
+        return (
+          <View style={styles.optionsGrid}>
+            {currentStageData?.options && Object.entries(currentStageData.options).map(([key, option]) => (
+              <TouchableOpacity
+                key={key}
+                style={[
+                  styles.checkboxButton,
+                  isOptionSelected('power', key) && styles.selectedCheckbox,
+                ]}
+                onPress={() => {
+                  const currentPower = state.answers.power || [];
+                  const newPower = currentPower.includes(key)
+                    ? currentPower.filter(p => p !== key)
+                    : [...currentPower, key];
+                  setAnswer('power', newPower);
+                }}
+              >
+                <Text style={styles.checkboxText}>{option}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        );
+      case 4:
+        return (
+          <View style={styles.optionsGrid}>
+            {currentStageData?.options && Object.entries(currentStageData.options).map(([key, option]) => (
+              <TouchableOpacity
+                key={key}
+                style={[
+                  styles.checkboxButton,
+                  isOptionSelected('body', key) && styles.selectedCheckbox,
+                ]}
+                onPress={() => {
+                  const currentBody = state.answers.body || [];
+                  const newBody = currentBody.includes(key)
+                    ? currentBody.filter(b => b !== key)
+                    : [...currentBody, key];
+                  setAnswer('body', newBody);
+                }}
+              >
+                <Text style={styles.checkboxText}>{option}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        );
+      case 5:
+        return (
+          <View style={styles.optionsGrid}>
+            {currentStageData?.options && Object.entries(currentStageData.options).map(([key, option]) => (
+              <TouchableOpacity
+                key={key}
+                style={[
+                  styles.checkboxButton,
+                  isOptionSelected('tech', key) && styles.selectedCheckbox,
+                ]}
+                onPress={() => {
+                  const currentTech = state.answers.tech || [];
+                  const newTech = currentTech.includes(key)
+                    ? currentTech.filter(t => t !== key)
+                    : [...currentTech, key];
+                  setAnswer('tech', newTech);
+                }}
+              >
+                <Text style={styles.checkboxText}>{option}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        );
+      case 6:
+        return (
+          <View style={styles.optionsGrid}>
+            {currentStageData?.options && Object.entries(currentStageData.options).map(([key, option]) => (
+              <TouchableOpacity
+                key={key}
+                style={[
+                  styles.checkboxButton,
+                  isOptionSelected('safety', key) && styles.selectedCheckbox,
+                ]}
+                onPress={() => {
+                  const currentSafety = state.answers.safety || [];
+                  const newSafety = currentSafety.includes(key)
+                    ? currentSafety.filter(s => s !== key)
+                    : [...currentSafety, key];
+                  setAnswer('safety', newSafety);
+                }}
+              >
+                <Text style={styles.checkboxText}>{option}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        );
+      case 7:
+        return (
+          <View style={styles.optionsGrid}>
+            {currentStageData?.options && Object.entries(currentStageData.options)
+              .filter(([key]) => ['gas', 'hybrid', 'ev', 'diesel', 'plugin'].includes(key))
+              .map(([key, option]) => (
+              <TouchableOpacity
+                key={key}
+                style={[
+                  styles.checkboxButton,
+                  isOptionSelected('fuel', key) && styles.selectedCheckbox,
+                ]}
+                onPress={() => {
+                  const currentFuel = state.answers.fuel || [];
+                  const newFuel = currentFuel.includes(key)
+                    ? currentFuel.filter(f => f !== key)
+                    : [...currentFuel, key];
+                  setAnswer('fuel', newFuel);
+                }}
+              >
+                <Text style={styles.checkboxText}>{option}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        );
+      case 8:
+        return (
+          <View style={styles.stageContent}>
+            <TextInput
+              style={styles.textInput}
+              placeholder={currentStageData?.options?.wildcardPlaceholder || 'Spill your guilty ride pleasure...'}
+              value={state.answers.wildcard || ''}
+              onChangeText={(text) => setAnswer('wildcard', text)}
+              multiline
+              numberOfLines={3}
+            />
+            <TextInput
+              style={styles.textInput}
+              placeholder={currentStageData?.options?.colorPlaceholder || 'Red for rage?'}
+              value={state.answers.color || ''}
+              onChangeText={(text) => setAnswer('color', text)}
+            />
+            <TextInput
+              style={styles.textInput}
+              placeholder={currentStageData?.options?.brandPlaceholder || 'Ford tough?'}
+              value={state.answers.brand || ''}
+              onChangeText={(text) => setAnswer('brand', text)}
+            />
+          </View>
+        );
+    }
+  };
+
+  const renderNavigation = () => {
+    const isFirstStage = state.currentStage === 1;
+    const isLastStage = state.currentStage === 8;
+
+    return (
+      <View style={styles.navigationContainer}>
+        {!isFirstStage && (
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={handleBack}
+          >
+            <LinearGradient
+              colors={['#ff4500', '#ff8c00']}
+              style={styles.backButtonGradient}
+            >
+              <Text style={styles.backButtonText}>
+                {languageConfigs[state.language]?.backButton || 'Back'}
+              </Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        )}
+        <TouchableOpacity
+          style={styles.nextButton}
+          onPress={handleNext}
+        >
+          <LinearGradient
+            colors={['#ff4500', '#ff8c00']}
+            style={styles.nextButtonGradient}
+          >
+            <Text style={styles.nextButtonText}>
+              {isLastStage
+                ? 'See Results'
+                : currentStageData?.button || 'Next'}
+            </Text>
+          </LinearGradient>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  return (
+    <LinearGradient
+      colors={['#000', '#1a0000', '#330000']}
+      style={styles.container}
+    >
+      <ScrollView
+        style={styles.scrollContainer}
+        contentContainerStyle={styles.content}
+      >
+        {renderProgress()}
+        <Animatable.View
+          animation="fadeInUp"
+          duration={500}
+          style={styles.questionContainer}
+        >
+          {renderQuestion()}
+        </Animatable.View>
+        <View style={styles.optionsContainer}>
+          {renderStageContent()}
+        </View>
+      </ScrollView>
+      {renderNavigation()}
+    </LinearGradient>
+  );
+};
+
+export default QuizScreen;
