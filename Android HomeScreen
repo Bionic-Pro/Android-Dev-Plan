@@ -1,0 +1,321 @@
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Animated,
+  Dimensions,
+} from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import * as Animatable from 'react-native-animatable';
+import { languageConfigs } from '../constants/languages';
+import { useQuiz } from '../utils/QuizContext';
+
+const { width } = Dimensions.get('window');
+
+interface HomeScreenProps {
+  navigation: any;
+}
+
+const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
+  console.log('🏠 HomeScreen: Rendering component');
+  const [selectedGender, setSelectedGender] = useState('prefer-not-to-say');
+  const { state, setLanguage } = useQuiz();
+  const currentLang = languageConfigs[state.language] || languageConfigs.en;
+
+  // Flame animation effect
+  const [flameAnimation] = useState(new Animated.Value(0));
+  React.useEffect(() => {
+    const flameAnimationLoop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(flameAnimation, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: false,
+        }),
+        Animated.timing(flameAnimation, {
+          toValue: 0,
+          duration: 1000,
+          useNativeDriver: false,
+        }),
+      ])
+    );
+    flameAnimationLoop.start();
+
+    return () => flameAnimationLoop.stop();
+  }, []);
+
+  const flameShadow = flameAnimation.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['rgba(255, 0, 0, 0.3)', 'rgba(255, 69, 0, 0.8)'],
+  });
+
+  const startQuiz = () => {
+    console.log('🎯 HomeScreen: startQuiz called, navigating to Quiz');
+    console.log('📱 Current language:', state.language);
+    navigation.navigate('Quiz');
+  };
+
+  const goToDebug = () => {
+    console.log('🔍 HomeScreen: Navigating to Debug screen');
+    navigation.navigate('Debug');
+  };
+
+  return (
+    <LinearGradient
+      colors={['#000', '#1a0000', '#330000']}
+      style={styles.container}
+    >
+      <Animatable.View
+        animation="fadeIn"
+        duration={1500}
+        style={styles.content}
+      >
+        {/* Header */}
+        <Animatable.View animation="bounceIn" style={styles.header}>
+          <Animated.Text
+            style={[
+              styles.logo,
+              {
+                textShadowColor: flameShadow,
+                textShadowRadius: flameAnimation.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [5, 20],
+                }),
+              },
+            ]}
+          >
+            🔥 Wheel Deal Devil 🔥
+          </Animated.Text>
+        </Animatable.View>
+
+        {/* Welcome Section */}
+        <Animatable.View animation="slideInUp" delay={500} style={styles.welcomeSection}>
+          <Text style={styles.welcomeTitle}>{currentLang.welcomeTitle}</Text>
+          <Text style={styles.welcomeText}>
+            {currentLang.welcomeText}
+          </Text>
+        </Animatable.View>
+
+        {/* Gender Selection - Centered Above */}
+        <Animatable.View animation="fadeIn" delay={600} style={styles.centeredSection}>
+          <Text style={[styles.label, { fontSize: 36, marginBottom: 20 }]}>What's your vibe, sinner?</Text>
+          <View style={styles.genderGrid}>
+            {[
+              { value: 'male', label: 'Male', color: '#1a237e' },
+              { value: 'female', label: 'Female', color: '#880e4f' },
+              { value: 'non-binary', label: 'Non-Binary', color: '#1b5e20' },
+              { value: 'prefer-not-to-say', label: 'Prefer Not to Say', color: '#4a148c' },
+            ].map((gender) => (
+              <TouchableOpacity
+                key={gender.value}
+                style={[
+                  styles.genderOption,
+                  { backgroundColor: gender.color },
+                  selectedGender === gender.value && styles.selectedGenderOption,
+                ]}
+                onPress={() => setSelectedGender(gender.value)}
+              >
+                <Text style={[styles.genderText, { fontSize: 18 }]}>{gender.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </Animatable.View>
+
+        {/* Language Selection */}
+        <Animatable.View animation="fadeIn" delay={800} style={styles.centeredSection}>
+          <Text style={[styles.label, { fontSize: 36, marginBottom: 20 }]}>{currentLang.languageLabel}</Text>
+          <View style={styles.languageGrid}>
+            {[
+              { code: 'en', name: 'English', flag: '🇺🇸' },
+              { code: 'ro', name: 'Română', flag: '🇷🇴' },
+              { code: 'es', name: 'Español', flag: '🇪🇸' },
+              { code: 'fr', name: 'Français', flag: '🇫🇷' },
+              { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
+              { code: 'it', name: 'Italiano', flag: '🇮🇹' },
+              { code: 'pt', name: 'Português', flag: '🇵🇹' },
+            ].map((lang) => (
+              <TouchableOpacity
+                key={lang.code}
+                style={[
+                  styles.languageOption,
+                  state.language === lang.code && styles.selectedOption,
+                ]}
+                onPress={() => setLanguage(lang.code)}
+              >
+                <Text style={[styles.languageText, { fontSize: 18 }]}>{lang.flag} {lang.name}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </Animatable.View>
+
+        {/* Start Button */}
+        <Animatable.View animation="pulse" iterationCount="infinite" style={styles.buttonSection}>
+          <TouchableOpacity style={styles.startButton} onPress={startQuiz}>
+            <LinearGradient
+              colors={['#ff0000', '#ff4500']}
+              style={styles.buttonGradient}
+            >
+              <Text style={styles.buttonText}>{currentLang.startButton}</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        </Animatable.View>
+
+        {/* Debug Button (only in development) */}
+        <TouchableOpacity
+          style={styles.debugButton}
+          onPress={goToDebug}
+        >
+          <Text style={styles.debugButtonText}>🔍 Debug</Text>
+        </TouchableOpacity>
+      </Animatable.View>
+    </LinearGradient>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  content: {
+    flex: 1,
+    padding: 20,
+    justifyContent: 'center',
+  },
+  header: {
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  logo: {
+    fontSize: 64,
+    fontWeight: 'bold',
+    color: '#fff',
+    textAlign: 'center',
+    fontFamily: 'Impact',
+  },
+  welcomeSection: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  welcomeTitle: {
+    fontSize: 48,
+    fontWeight: 'bold',
+    color: '#ffd700',
+    textAlign: 'center',
+    marginBottom: 15,
+    fontFamily: 'Impact',
+  },
+  welcomeText: {
+    fontSize: 32,
+    color: '#fff',
+    textAlign: 'center',
+    lineHeight: 40,
+    opacity: 0.9,
+  },
+  selectionSection: {
+    marginBottom: 30,
+  },
+  centeredSection: {
+    alignItems: 'center',
+    marginBottom: 30,
+  },
+  label: {
+    fontSize: 18,
+    color: '#fff',
+    marginBottom: 15,
+    fontFamily: 'Impact',
+  },
+  languageGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+  },
+  languageOption: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 10,
+    padding: 10,
+    margin: 5,
+    minWidth: 100,
+    alignItems: 'center',
+  },
+  selectedOption: {
+    backgroundColor: '#ff4500',
+    borderWidth: 2,
+    borderColor: '#ffd700',
+  },
+  languageText: {
+    color: '#fff',
+    fontSize: 14,
+    fontFamily: 'Impact',
+  },
+  genderGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+  },
+  genderOption: {
+    borderRadius: 15,
+    padding: 12,
+    margin: 5,
+    minWidth: 120,
+    alignItems: 'center',
+  },
+  selectedGenderOption: {
+    borderWidth: 3,
+    borderColor: '#ffd700',
+  },
+  genderText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: 'bold',
+    fontFamily: 'Impact',
+  },
+  buttonSection: {
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  startButton: {
+    borderRadius: 25,
+    overflow: 'hidden',
+    elevation: 5,
+    shadowColor: '#ff0000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.8,
+    shadowRadius: 8,
+  },
+  buttonGradient: {
+    paddingHorizontal: 40,
+    paddingVertical: 15,
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: 'bold',
+    fontFamily: 'Impact',
+  },
+  debugButton: {
+    position: 'absolute',
+    top: 20,
+    right: 20,
+    backgroundColor: '#ff4500',
+    borderRadius: 15,
+    padding: 12,
+    borderWidth: 2,
+    borderColor: '#ffd700',
+    elevation: 5,
+    shadowColor: '#ffd700',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.8,
+    shadowRadius: 4,
+  },
+  debugButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: 'bold',
+    fontFamily: 'Impact',
+  },
+});
+
+export default HomeScreen;
