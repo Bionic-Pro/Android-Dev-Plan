@@ -1,0 +1,252 @@
+Wheel Deal Devil Native Android Development Plan with Gemini Agent Prompts
+Stage 1: Project Foundation & Architecture Setup
+1.1 Project Configuration
+Set up Android Studio project with Gradle Kotlin DSL
+
+Configure build scripts, modules (app, core, features)
+
+Define build variants and signing configs
+
+Prompt:
+"Initialize a new Android Studio project using Kotlin DSL for Gradle version 8.1+, modularize it into app, core, and feature modules, configure build variants for debug, release, and staging including signing configurations for all variants. Ensure the project structure follows Clean Architecture principles and is ready for addition of dependencies."
+
+1.2 Architecture Implementation
+Implement Clean Architecture layers: Domain, Data, Presentation
+
+Set up dependency injection with Hilt
+
+Establish repository pattern and navigation architecture
+
+Prompt:
+"Implement the Clean Architecture layers with distinct modules for Domain, Data, and Presentation. Set up Hilt for dependency injection throughout the project. Create base interfaces and repository pattern abstractions. Configure Jetpack Navigation Component to support modular navigation and prepare infrastructure for ViewModels and StateFlow integration."
+
+1.3 Development Environment Setup
+Integrate Ktlint for code formatting and Detekt for static analysis
+
+Configure testing frameworks (JUnit 5, Mockito, Espresso)
+
+Set up CI/CD pipeline (GitHub Actions)
+
+Integrate Firebase/Crashlytics for error reporting
+
+Prompt:
+"Configure Ktlint and Detekt for Kotlin code style enforcement and static analysis. Set up testing frameworks: JUnit 5 for unit tests, Mockito for mocking, Espresso and Compose UI Testing for UI tests. Establish a CI/CD pipeline using GitHub Actions to automate builds and tests. Integrate Firebase Crashlytics SDK for crash reporting and monitoring."
+
+Stage 2: Core UI Foundation & Design System
+2.1 Design System Creation
+Define devil-themed color palette and typography (Impact font)
+
+Implement consistent spacing, sizing, shapes, borders
+
+Set motion and animation constants for the project
+
+Prompt:
+"Create a design system with a custom color palette featuring dark backgrounds and flame colors to reflect the devil theme. Define typography to use the Impact font family. Establish uniform spacing, sizing, custom shapes, and borders standards. Set motion and animation constants compatible with Jetpack Compose Animation APIs."
+
+2.2 Base Components Development
+Create custom Buttons, Sliders, and SelectionCards with theme styling
+
+Implement animated ProgressIndicators, Loading states, and error components
+
+Prompt:
+"Develop reusable Jetpack Compose UI components styled for the devil theme: Buttons, Sliders for budget input, and SelectionCard components for quiz options. Include animated Progress Indicators with flame effects, loading placeholders, and error message components with consistent styling and accessibility support."
+
+2.3 Theme & Styling
+Develop Material 3 theme with dark mode support and gradients
+
+Define elevation and shadows, implement responsive design patterns
+
+Prompt:
+"Implement a Material 3 based theme supporting dark mode with custom gradient backgrounds and flame visual effects. Define elevation and shadow usage following Material Design guidelines. Ensure responsive design patterns that scale appropriately on phones and tablets (7-inch+)."
+
+Stage 3: State Management & Navigation
+3.1 Quiz State Management
+Develop QuizViewModel using StateFlow for state encapsulation
+
+Implement quiz progression, answer validation, and Room database persistence
+
+Support multi-language switching
+
+Prompt:
+"Create a QuizViewModel managing quiz state with StateFlow, implementing quiz progression logic, real-time answer validation, and persistence of quiz state in Room database. Add support for runtime language switching to enable multi-lingual quizzes."
+
+3.2 Navigation Setup
+Configure Jetpack Navigation Component with Compose integration
+
+Implement deep linking and navigation animations
+
+Handle back stack and state persistence
+
+Prompt:
+"Set up Jetpack Navigation Component integrated with Compose to manage navigation between quiz stages and other screens. Implement deep linking to support app URLs for sharing. Add smooth animations and transitions between destinations. Manage back stack and preserve navigation state on configuration changes."
+
+3.3 Data Flow Implementation
+Create repository pattern for network and local data
+
+Implement domain use cases and data mappers
+
+Establish error handling, caching, and fallback mechanisms
+
+Prompt:
+"Develop the data flow with repository pattern separating remote and local data sources. Implement use cases for business logic and data mappers to transform network and database models into domain models. Integrate comprehensive error handling, offline caching strategies, and fallback mechanisms for network failures."
+
+Stage 4: Quiz System Implementation
+4.1 Quiz Engine
+Build multi-stage (8-stage) quiz flow with dynamic questions
+
+Develop answer collection, validation, and progress saving/restoration
+
+Prompt:
+"Implement an 8-stage quiz engine with dynamically generated questions per stage. Build infrastructure for answer collection, validation, and persistent saving/restoring of quiz progress using Room database. Ensure robust error handling and state restoration on app restarts."
+
+4.2 Interactive Components
+Create interactive BudgetSlider, MultiSelectGrid, RadioButtonGroup, and TextInput
+
+Design smooth animated transitions between quiz stages
+
+Prompt:
+"Build interactive Jetpack Compose components for the quiz: BudgetSlider with real-time updates, MultiSelectGrid for multiple options, RadioButtonGroup for single selections, and TextInput for wild card entries. Implement smooth animated transitions between quiz stages to enhance UX."
+
+4.3 Quiz UX/UI
+Apply devil styling with flame animations
+
+Implement visual feedback for selections, manage keyboard and focus
+
+Ensure accessibility support (TalkBack compatibility)
+
+Prompt:
+"Apply devil-themed flame styling and animations to all quiz UI elements. Add clear visual feedback for user selections. Implement seamless keyboard management and focus controls. Ensure full accessibility compliance with TalkBack screen reader support."
+
+Stage 5: Backend Integration & API Layer
+5.1 Network Configuration
+Set up Retrofit with OkHttp and request interceptors
+
+Implement authentication headers, retries, and timeout policies
+
+Prompt:
+"Configure Retrofit and OkHttp clients with authentication headers, logging, and interceptors for monitoring and retries. Implement timeout policies to handle slow network scenarios gracefully."
+
+5.2 Data Repository & Sync
+Build remote data sources and local caching with Room
+
+Support offline handling and data synchronization strategies
+
+Prompt:
+"Implement data repositories that fetch remote data via Retrofit and cache locally in Room. Establish synchronization logic to update local cache with latest remote data, supporting full offline functionality and conflict resolution."
+
+5.3 Error Handling Mechanisms
+Create custom exceptions, error transformations, and user-friendly messages
+
+Implement retry and fallback logic
+
+Prompt:
+"Define custom exception classes for API and database errors. Implement transformations to user-friendly error messages and add retry mechanisms with exponential backoff. Provide graceful fallbacks to cached data or default UI states on failure."
+
+Stage 6: Results & Recommendations System
+6.1 Recommendation UI
+Develop result screen with image carousel, features list, and price comparison
+
+Prompt:
+"Build recommendation result screen featuring an image carousel with zoom support, a detailed features list with icons, and a comparative price view. Ensure smooth scroll and interaction performance on mid-range devices."
+
+6.2 Actions & Sharing
+Add native sharing, "Find Similar," bookmarking, and deep linking features
+
+Implement start-over functionality
+
+Prompt:
+"Implement native Android sharing for recommendation results. Add features to find similar cars, bookmark favorites, support deep linking for shared results, and provide functionality to reset and start the quiz over."
+
+6.3 UI Enhancements
+Design smooth reveal animations, loading skeletons, empty states
+
+Implement pull-to-refresh on results
+
+Prompt:
+"Add polished UI enhancements including smooth reveal animations, skeleton loading indicators during network waits, empty state screens for no results, and pull-to-refresh gesture support on the results screen."
+
+Stage 7: Advanced Features & Polish
+7.1 Multi-language Support
+Provide resources for 7 languages with runtime switching and RTL support
+
+Add necessary font fallbacks
+
+Prompt:
+"Localize all user-facing strings into 7 supported languages, enable runtime language switching in the app, add right-to-left (RTL) language support where needed, and implement font fallbacks for all languages."
+
+7.2 Animations & Microinteractions
+Add Lottie flame animations, page transitions, parallax effects, and loading animations
+
+Prompt:
+"Enhance UI with Lottie flame animations for brand consistency, implement smooth page transition animations, parallax scrolling effects, micro-interactions for user feedback, and vivid loading animations."
+
+7.3 Performance Optimization
+Optimize image caching, Compose recompositions, lazy loading
+
+Implement memory management and performance monitoring
+
+Prompt:
+"Optimize image loading and caching with Coil, minimize unnecessary Compose recompositions, implement lazy loading for long lists, manage app memory effectively, and add performance monitoring tools to detect regressions."
+
+Stage 8: Native Android Features Integration
+8.1 System Integration
+Implement push notifications, app shortcuts, widgets, backups, and autofill
+
+Prompt:
+"Integrate Firebase Cloud Messaging for push notifications, create app shortcuts and widgets for quick recommendations, configure app backup and restore mechanisms, and enable autofill support for forms."
+
+8.2 Permissions & Security
+Manage runtime permissions, secure storage for keys, biometric auth, app lock, and encryption
+
+Prompt:
+"Implement robust runtime permission requests and handling, securely store API keys using encrypted shared preferences or Android Keystore, add biometric authentication and app lock features, and encrypt sensitive data both in transit and at rest."
+
+8.3 Best Practices
+Proper lifecycle handling, WorkManager for background tasks
+
+Adaptive icons, splash screens, and app link/deep link handling
+
+Prompt:
+"Ensure proper lifecycle management with ViewModel and lifecycle-aware components, schedule background tasks using WorkManager, add adaptive launcher icons and branded splash screens, and implement app links and deep link handling for seamless user navigation."
+
+Stage 9: Testing & Quality Assurance
+9.1 Unit Testing
+Test ViewModels, repositories, use cases; achieve >85% coverage
+
+Prompt:
+"Write comprehensive unit tests for ViewModels, repositories, and domain use cases using JUnit 5 and Mockito, targeting above 85% code coverage."
+
+9.2 Integration Testing
+Test API layers, database, navigation, permissions
+
+Prompt:
+"Develop integration tests covering API service calls, database operations, navigation flows, and runtime permission handling to ensure end-to-end functionality."
+
+9.3 UI Testing
+Espresso + Compose UI tests for main flows, accessibility, theme switching
+
+Include screenshot and contract testing
+
+Prompt:
+"Implement UI tests using Espresso and Compose UI Testing libraries to cover user interaction flows, accessibility features including TalkBack, dark/light theme toggling, and add screenshot and contract tests for UI consistency across versions."
+
+Stage 10: Build, Deployment & Distribution
+10.1 Build Optimization
+Configure ProGuard/R8, resource shrinking, bundle splits for ABI and dynamic delivery
+
+Prompt:
+"Set up ProGuard and R8 rules for code shrinking and obfuscation. Enable resource shrinking and configure app bundle splits by ABI. Implement dynamic feature delivery to optimize APK size."
+
+10.2 Release Management
+Setup beta testing, crash reporting, performance monitoring, analytics
+
+Prompt:
+"Configure Google Play beta testing track for staged rollouts. Integrate crash reporting and performance monitoring tools. Set up detailed analytics tracking user behavior and app health metrics."
+
+10.3 Play Store Preparation
+Create store listings, privacy policies, age rating, and promotional materials
+
+Plan staged rollout and post-release monitoring
+
+Prompt:
+"Prepare Google Play Store listing including app description, features, screenshots, promotional videos, privacy policy documentation, and age rating. Plan staged rollout from 20% to 100% users with post-release crash and user feedback monitoring."
