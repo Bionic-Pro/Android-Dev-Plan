@@ -1,0 +1,383 @@
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+  Dimensions,
+  Image,
+  Share,
+} from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import * as Animatable from 'react-native-animatable';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useQuiz } from '../utils/QuizContext';
+import { languageConfigs } from '../constants/languages';
+import { checkPermissions, requestPermissions } from '../utils/permissions';
+import Constants from 'expo-constants';
+
+const { width } = Dimensions.get('window');
+
+const config = {
+  apiBaseUrl: Constants.expoConfig?.extra?.apiBaseUrl || (__DEV__ ? 'http://192.168.1.5:8000' : 'http://localhost:8000'),
+};
+
+interface ResultsScreenProps {
+  navigation: any;
+}
+
+interface Recommendation {
+  title: string;
+  car: string;
+  year: string;
+  why: string;
+  price: string;
+  price_multi: string;
+  features: string[];
+  message: string;
+  image_url: string;
+  buying_links?: any[];
+  slang?: any;
+}
+
+const ResultsScreen: React.FC<ResultsScreenProps> = ({ navigation }) => {
+  const { state, resetQuiz } = useQuiz();
+  const currentLang = languageConfigs[state.language] || languageConfigs.en;
+  const [recommendation, setRecommendation] = useState<Recommendation | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchRecommendation = async () => {
+      try {
+        // Check for cached recommendation first
+        const cachedRecommendation = await AsyncStorage.getItem('lastRecommendation');
+        if (cachedRecommendation) {
+          const parsed = JSON.parse(cachedRecommendation);
+          if (parsed.timestamp && Date.now() - parsed.timestamp < 24 * 60 * 60 * 1000) { // 24 hours
+            setRecommendation(parsed.data);
+            setLoading(false);
+            return;
+          }
+        }
+
+        // Fetch from backend
+        const response = await fetch(`${config.apiBaseUrl}/api/recommend`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-API-Key': Constants.expoConfig?.extra?.apiKey || 'your_api_key_here',
+          },
+          body: JSON.stringify({
+            userData: state.answers,
+            language: state.language,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        setRecommendation(data);
+
+        // Cache the recommendation
+        await AsyncStorage.setItem('lastRecommendation', JSON.stringify({
+          data,
+          timestamp: Date.now(),
+        }));
+
+      } catch (error) {
+        console.error('Error fetching recommendation:', error);
+
+        // Use fallback data on error
+        const fallbackRecommendation = {
+          title: "The Devil's Choice",
+          car: "Tesla Model 3",
+          year: "2024",
+          why: "Based on your sinful choices, the devil recommends this electric beast! Perfect balance of power, tech, and efficiency for your demonic lifestyle.",
+          price: "$45,000",
+          price_multi: "$45,000 - $55,000",
+          features: [
+            "Autopilot for hands-free highway driving",
+            "Supercharger network access",
+            "0-60 in 3.1 seconds",
+            "Premium connectivity included",
+            "Over-the-air software updates"
+          ],
+          message: "This demon will serve you well on your path to automotive enlightenment! 🔥",
+          image_url: "",
+        };
+
+        setRecommendation(fallbackRecommendation);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRecommendation();
+  }, [state.answers, state.language]);
+
+  const handleRestart = () => {
+    resetQuiz();
+    navigation.navigate('Home');
+  };
+
+  const handleShare = async () => {
+    const hasPermissions = await checkPermissions();
+    if (!hasPermissions.media) {
+      const granted = await requestPermissions();
+      if (!granted) return;
+    }
+
+    try {
+      const result = await Share.share({
+        message: `Check out my devilish car recommendation: ${recommendation?.car || 'Tesla Model 3'} - ${recommendation?.why || 'Perfect for me!'}\nPrice: ${recommendation?.price_multi || recommendation?.price}\nFrom Wheel Deal Devil! 🔥`,
+        url: recommendation?.image_url || undefined,
+        title: 'My Car Recommendation',
+      });
+
+      if (result.action === Share.sharedAction) {
+        if (result.activityType) {
+          // Shared with activity type of result.activityType
+        } else {
+          // Shared
+        }
+      } else if (result.action === Share.dismissedAction) {
+        // Dismissed
+      }
+    } catch (error: any) {
+      alert('Error sharing: ' + error.message);
+    }
+  };
+
+  if (loading) {
+    return (
+      <LinearGradient
+        colors={['#000', '#1a0000', '#330000']}
+        style={styles.container}
+      >
+        <View style={styles.content}>
+          <Text style={styles.loadingText}>Loading your recommendation...</Text>
+        </View>
+      </LinearGradient>
+    );
+  }
+
+  return (
+    <LinearGradient
+      colors={['#000', '#1a0000', '#330000']}
+      style={styles.container}
+    >
+      <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+        <Animatable.View animation="fadeIn" style={styles.content}>
+
+          {/* Header */}
+          <Animatable.View animation="bounceIn" style={styles.header}>
+            <Text style={styles.title}>Your Devilish Recommendation</Text>
+          </Animatable.View>
+
+          {/* Recommendation Card */}
+          <Animatable.View
+            animation="slideInUp"
+            style={styles.recommendationCard}
+          >
+            <Text style={styles.recommendationTitle}>{recommendation?.title || 'Your Perfect Ride'}</Text>
+            <Text style={styles.recommendationText}>
+              {recommendation?.car || 'Tesla Model 3'}
+            </Text>
+
+            {/* Car Image */}
+            {recommendation?.image_url && (
+              <Image source={{ uri: recommendation.image_url }} style={styles.carImage} />
+            )}
+
+            <Text style={styles.recommendationText}>
+              {recommendation?.why || 'Based on your sinful choices, the devil recommends this beast!'}
+            </Text>
+
+            <Text style={styles.priceText}>{recommendation?.price_multi || recommendation?.price}</Text>
+
+            <Text style={styles.featuresTitle}>Features:</Text>
+            {recommendation?.features?.map((feature, index) => (
+              <Text key={index} style={styles.featureText}>• {feature}</Text>
+            ))}
+
+            <Text style={styles.messageText}>{recommendation?.message}</Text>
+
+            {/* Quiz Summary */}
+            <Text style={styles.summaryTitle}>Your Selections:</Text>
+            <View style={styles.summary}>
+              <Text style={styles.summaryText}>Budget: ${state.answers.budget || 'N/A'}</Text>
+              <Text style={styles.summaryText}>Lifestyle: {state.answers.lifestyle || 'N/A'}</Text>
+              <Text style={styles.summaryText}>Power: {state.answers.power || 'N/A'}</Text>
+              <Text style={styles.summaryText}>Body: {state.answers.body || 'N/A'}</Text>
+              <Text style={styles.summaryText}>Tech: {state.answers.tech?.join(', ') || 'N/A'}</Text>
+              <Text style={styles.summaryText}>Safety: {state.answers.safety || 'N/A'}</Text>
+              <Text style={styles.summaryText}>Fuel: {state.answers.fuel || 'N/A'}</Text>
+            </View>
+
+            {/* Action Buttons */}
+            <View style={styles.actionsContainer}>
+              <TouchableOpacity style={styles.shareButton} onPress={handleShare}>
+                <LinearGradient colors={['#ff4500', '#ff0000']} style={styles.shareButtonGradient}>
+                  <Text style={styles.shareButtonText}>Share Your Sin</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.restartButton} onPress={handleRestart}>
+                <LinearGradient colors={['#666', '#444']} style={styles.restartButtonGradient}>
+                  <Text style={styles.restartButtonText}>Restart the Madness</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
+          </Animatable.View>
+        </Animatable.View>
+      </ScrollView>
+    </LinearGradient>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  scrollContainer: {
+    flex: 1,
+  },
+  content: {
+    padding: 20,
+    paddingTop: 60,
+  },
+  header: {
+    alignItems: 'center',
+    marginBottom: 30,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#ffd700',
+    textAlign: 'center',
+    fontFamily: 'Impact',
+  },
+  recommendationCard: {
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    borderRadius: 15,
+    padding: 20,
+    borderWidth: 2,
+    borderColor: '#ff4500',
+  },
+  recommendationTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#ffd700',
+    textAlign: 'center',
+    marginBottom: 15,
+    fontFamily: 'Impact',
+  },
+  recommendationText: {
+    fontSize: 18,
+    color: '#fff',
+    textAlign: 'center',
+    marginBottom: 20,
+    fontFamily: 'Impact',
+  },
+  imagePlaceholder: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 10,
+    padding: 40,
+    marginBottom: 20,
+    alignItems: 'center',
+  },
+  loadingText: {
+    color: '#fff',
+    fontSize: 18,
+    textAlign: 'center',
+    fontFamily: 'Impact',
+  },
+  carImage: {
+    width: '100%',
+    height: 200,
+    borderRadius: 10,
+    marginBottom: 15,
+  },
+  priceText: {
+    fontSize: 20,
+    color: '#ffd700',
+    textAlign: 'center',
+    marginBottom: 15,
+    fontFamily: 'Impact',
+  },
+  featuresTitle: {
+    fontSize: 20,
+    color: '#ffd700',
+    marginBottom: 10,
+    fontFamily: 'Impact',
+  },
+  featureText: {
+    color: '#fff',
+    fontSize: 16,
+    marginBottom: 5,
+    fontFamily: 'Impact',
+  },
+  messageText: {
+    fontSize: 18,
+    color: '#ff4500',
+    textAlign: 'center',
+    marginTop: 15,
+    fontFamily: 'Impact',
+  },
+  summaryTitle: {
+    fontSize: 20,
+    color: '#ffd700',
+    marginBottom: 15,
+    fontFamily: 'Impact',
+  },
+  summary: {
+    marginBottom: 20,
+  },
+  summaryText: {
+    color: '#fff',
+    fontSize: 16,
+    marginBottom: 5,
+    fontFamily: 'Impact',
+  },
+  actionsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  shareButton: {
+    flex: 1,
+    marginRight: 10,
+    borderRadius: 25,
+    overflow: 'hidden',
+  },
+  shareButtonGradient: {
+    paddingVertical: 15,
+    alignItems: 'center',
+  },
+  shareButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+    fontFamily: 'Impact',
+  },
+  restartButton: {
+    flex: 1,
+    marginLeft: 10,
+    borderRadius: 25,
+    overflow: 'hidden',
+  },
+  restartButtonGradient: {
+    paddingVertical: 15,
+    alignItems: 'center',
+  },
+  restartButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+    fontFamily: 'Impact',
+  },
+});
+
+export default ResultsScreen;
