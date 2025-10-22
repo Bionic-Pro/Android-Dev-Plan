@@ -1,0 +1,125 @@
+import React from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useQuiz } from '../utils/QuizContext';
+import { languageConfigs } from '../constants/languages';
+
+interface DebugInfoProps {
+  title: string;
+  data: any;
+}
+
+const DebugInfo: React.FC<DebugInfoProps> = ({ title, data }) => (
+  <View style={styles.debugSection}>
+    <Text style={styles.debugTitle}>{title}</Text>
+    <Text style={styles.debugData}>{JSON.stringify(data, null, 2)}</Text>
+  </View>
+);
+
+interface DebugScreenProps {
+  navigation: any;
+}
+
+const DebugScreen: React.FC<DebugScreenProps> = ({ navigation }) => {
+  console.log('🔍 DebugScreen: Rendering');
+  const { state } = useQuiz();
+
+  console.log('🔍 DebugScreen: State received:', state);
+
+  const debugData = {
+    currentStage: state.currentStage,
+    language: state.language,
+    answers: state.answers,
+    availableLanguages: Object.keys(languageConfigs),
+    stageDataExists: !!languageConfigs[state.language]?.stages[state.currentStage],
+    englishStageData: languageConfigs.en?.stages[state.currentStage],
+    currentStageData: languageConfigs[state.language]?.stages[state.currentStage],
+  };
+
+  console.log('🔍 DebugScreen: Debug data:', debugData);
+
+  return (
+    <LinearGradient colors={['#000', '#1a0000', '#330000']} style={styles.container}>
+      <ScrollView style={styles.scrollContainer} contentContainerStyle={styles.content}>
+        <Text style={styles.title}>🔍 Debug Information</Text>
+
+        <DebugInfo title="Current State" data={debugData} />
+
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => navigation.navigate('Home')}
+          >
+            <Text style={styles.buttonText}>Go to Home</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => navigation.navigate('Quiz')}
+          >
+            <Text style={styles.buttonText}>Go to Quiz</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    </LinearGradient>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  scrollContainer: {
+    flex: 1,
+  },
+  content: {
+    padding: 20,
+    paddingTop: 60,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#ffd700',
+    textAlign: 'center',
+    marginBottom: 20,
+    fontFamily: 'Impact',
+  },
+  debugSection: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 10,
+    padding: 15,
+    marginBottom: 15,
+  },
+  debugTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#ff4500',
+    marginBottom: 10,
+    fontFamily: 'Impact',
+  },
+  debugData: {
+    fontSize: 12,
+    color: '#fff',
+    fontFamily: 'monospace',
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: 20,
+  },
+  button: {
+    backgroundColor: '#ff4500',
+    borderRadius: 10,
+    padding: 15,
+    minWidth: 120,
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+    fontFamily: 'Impact',
+  },
+});
+
+export default DebugScreen;
